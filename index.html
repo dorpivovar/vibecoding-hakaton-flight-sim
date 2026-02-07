@@ -63,8 +63,7 @@
             <div class="controls-info">
                 <h3>Управление:</h3>
                 <div class="controls-grid">
-                    <div><kbd>W</kbd> / <kbd>S</kbd> — Тангаж (нос вниз/вверх)</div>
-                    <div><kbd>A</kbd> / <kbd>D</kbd> — Крен (влево/вправо)</div>
+                    <div><kbd>🖱️ Мышь</kbd> — Тангаж и крен (перекрестье)</div>
                     <div><kbd>Q</kbd> / <kbd>E</kbd> — Рыскание (влево/вправо)</div>
                     <div><kbd>Shift</kbd> / <kbd>Ctrl</kbd> — Тяга +/-</div>
                     <div><kbd>F</kbd> — Закрылки</div>
@@ -73,6 +72,7 @@
                     <div><kbd>V</kbd> — Смена камеры</div>
                     <div><kbd>R</kbd> — Сброс позиции</div>
                     <div><kbd>P</kbd> — Пауза</div>
+                    <div><kbd>Esc</kbd> — Отпустить курсор</div>
                 </div>
             </div>
         </div>
@@ -154,8 +154,18 @@
             <div class="status-item" id="status-ground" style="display:none">⚠️ ЗЕМЛЯ</div>
         </div>
 
-        <!-- Прицел / Центр -->
-        <div class="hud-crosshair">
+        <!-- Центр (нос самолёта) -->
+        <div class="hud-center-dot">
+            <div class="center-dot-inner"></div>
+            <div class="center-line-h"></div>
+            <div class="center-line-h2"></div>
+        </div>
+
+        <!-- Линия от центра к перекрестью -->
+        <div class="crosshair-line" id="crosshair-line"></div>
+
+        <!-- Перекрестье (двигается мышью) -->
+        <div class="hud-crosshair" id="hud-crosshair">
             <div class="crosshair-h"></div>
             <div class="crosshair-v"></div>
             <div class="crosshair-circle"></div>

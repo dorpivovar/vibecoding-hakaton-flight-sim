@@ -42,13 +42,15 @@ class AircraftModel {
         fuselage.position.set(0, 0, 0);
         this.group.add(fuselage);
 
-        // Нос (конус)
+        // Нос (конус) — CylinderGeometry(radiusTop, radiusBottom, height)
+        // radiusTop=0 (остриё, +Y) → после rotation.x=PI/2 уходит на -Z (вперёд)
+        // radiusBottom=0.5 (основание, -Y) → уходит на +Z (к фюзеляжу)
         const nose = new THREE.Mesh(
-            new THREE.ConeGeometry(0.5, 1.5, 8),
+            new THREE.CylinderGeometry(0, 0.5, 1.5, 8),
             accentMat
         );
-        nose.rotation.x = Math.PI / 2;
-        nose.position.set(0, 0, -3.5);
+        nose.rotation.x = -Math.PI / 2;
+        nose.position.set(0, 0, -3.25);
         this.group.add(nose);
 
         // Кабина
@@ -146,12 +148,12 @@ class AircraftModel {
         );
         this.group.add(fuselage);
 
-        // Нос (острый)
+        // Нос (острый) — CylinderGeometry: tip=0 вперёд, base=0.55 к фюзеляжу
         const nose = new THREE.Mesh(
-            new THREE.ConeGeometry(0.55, 3.0, 6),
+            new THREE.CylinderGeometry(0, 0.55, 3.0, 6),
             bodyMat
         );
-        nose.rotation.x = Math.PI / 2;
+        nose.rotation.x = -Math.PI / 2;
         nose.position.set(0, 0, -5.0);
         this.group.add(nose);
 
@@ -200,21 +202,21 @@ class AircraftModel {
             this.group.add(vStab);
         }
 
-        // Сопло двигателя
+        // Сопло двигателя (шире к хвосту)
         const nozzle = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.4, 0.5, 1.5, 8),
+            new THREE.CylinderGeometry(0.5, 0.4, 1.5, 8),
             engineMat
         );
-        nozzle.rotation.x = Math.PI / 2;
+        nozzle.rotation.x = -Math.PI / 2;
         nozzle.position.set(0, 0, 4.0);
         this.group.add(nozzle);
 
         // Форсажное свечение
         const afterburner = new THREE.Mesh(
-            new THREE.ConeGeometry(0.35, 2.0, 8),
+            new THREE.CylinderGeometry(0, 0.35, 2.0, 8),
             new THREE.MeshBasicMaterial({ color: 0xff6600, transparent: true, opacity: 0.6 })
         );
-        afterburner.rotation.x = -Math.PI / 2;
+        afterburner.rotation.x = Math.PI / 2;
         afterburner.position.set(0, 0, 5.5);
         afterburner.visible = false;
         afterburner.name = 'afterburner';
@@ -243,12 +245,12 @@ class AircraftModel {
         fuselage.rotation.x = Math.PI / 2;
         this.group.add(fuselage);
 
-        // Нос
+        // Нос (полусфера, купол смотрит вперёд -Z)
         const nose = new THREE.Mesh(
             new THREE.SphereGeometry(1.5, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5),
             bodyMat
         );
-        nose.rotation.x = Math.PI / 2;
+        nose.rotation.x = -Math.PI / 2;
         nose.position.set(0, 0, -7);
         this.group.add(nose);
 
@@ -260,12 +262,12 @@ class AircraftModel {
         cockpit.position.set(0, 0.5, -6.5);
         this.group.add(cockpit);
 
-        // Хвост (конус)
+        // Хвост (конус — остриё назад +Z, основание к фюзеляжу)
         const tail = new THREE.Mesh(
-            new THREE.ConeGeometry(1.5, 4, 12),
+            new THREE.CylinderGeometry(0, 1.5, 4, 12),
             bodyMat
         );
-        tail.rotation.x = -Math.PI / 2;
+        tail.rotation.x = Math.PI / 2;
         tail.position.set(0, 0, 9);
         this.group.add(tail);
 
