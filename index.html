@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Полётный Симулятор</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>✈️ ПОЛЁТНЫЙ СИМУЛЯТОР</h1>
+            <p class="loading-sub">Flight Physics Simulator</p>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+            <p id="loading-text">Загрузка систем...</p>
+        </div>
+    </div>
+
+    <!-- Стартовый экран -->
+    <div id="start-screen" style="display:none;">
+        <div class="start-content">
+            <h1>✈️ ПОЛЁТНЫЙ СИМУЛЯТОР</h1>
+            <p class="start-sub">Реалистичная физика полёта</p>
+            
+            <div class="aircraft-select">
+                <h3>Выберите самолёт:</h3>
+                <div class="aircraft-options">
+                    <div class="aircraft-card selected" data-aircraft="cessna">
+                        <div class="aircraft-icon">🛩️</div>
+                        <h4>Cessna 172</h4>
+                        <p>Лёгкий • Учебный</p>
+                        <div class="specs">
+                            <span>Макс: 226 км/ч</span>
+                            <span>Потолок: 4100м</span>
+                        </div>
+                    </div>
+                    <div class="aircraft-card" data-aircraft="fighter">
+                        <div class="aircraft-icon">✈️</div>
+                        <h4>F-16 Falcon</h4>
+                        <p>Истребитель • Маневренный</p>
+                        <div class="specs">
+                            <span>Макс: 2120 км/ч</span>
+                            <span>Потолок: 15000м</span>
+                        </div>
+                    </div>
+                    <div class="aircraft-card" data-aircraft="airliner">
+                        <div class="aircraft-icon">🛫</div>
+                        <h4>Boeing 737</h4>
+                        <p>Авиалайнер • Стабильный</p>
+                        <div class="specs">
+                            <span>Макс: 876 км/ч</span>
+                            <span>Потолок: 12500м</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="start-btn" class="btn-start">НАЧАТЬ ПОЛЁТ</button>
+            
+            <div class="controls-info">
+                <h3>Управление:</h3>
+                <div class="controls-grid">
+                    <div><kbd>W</kbd> / <kbd>S</kbd> — Тангаж (нос вниз/вверх)</div>
+                    <div><kbd>A</kbd> / <kbd>D</kbd> — Крен (влево/вправо)</div>
+                    <div><kbd>Q</kbd> / <kbd>E</kbd> — Рыскание (влево/вправо)</div>
+                    <div><kbd>Shift</kbd> / <kbd>Ctrl</kbd> — Тяга +/-</div>
+                    <div><kbd>F</kbd> — Закрылки</div>
+                    <div><kbd>G</kbd> — Шасси</div>
+                    <div><kbd>B</kbd> — Воздушный тормоз</div>
+                    <div><kbd>V</kbd> — Смена камеры</div>
+                    <div><kbd>R</kbd> — Сброс позиции</div>
+                    <div><kbd>P</kbd> — Пауза</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" style="display:none;">
+        <!-- Верхняя панель -->
+        <div class="hud-top">
+            <div class="hud-item">
+                <span class="hud-label">СКОРОСТЬ</span>
+                <span class="hud-value" id="hud-speed">0</span>
+                <span class="hud-unit">км/ч</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">ВЫСОТА</span>
+                <span class="hud-value" id="hud-altitude">0</span>
+                <span class="hud-unit">м</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">ВЕРТ. СКОРОСТЬ</span>
+                <span class="hud-value" id="hud-vspeed">0</span>
+                <span class="hud-unit">м/с</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">КУРС</span>
+                <span class="hud-value" id="hud-heading">0</span>
+                <span class="hud-unit">°</span>
+            </div>
+        </div>
+
+        <!-- Левая панель — искусственный горизонт -->
+        <div class="hud-left">
+            <div class="attitude-indicator" id="attitude-indicator">
+                <div class="attitude-sky" id="attitude-sky"></div>
+                <div class="attitude-ground" id="attitude-ground"></div>
+                <div class="attitude-horizon" id="attitude-horizon"></div>
+                <div class="attitude-wings"></div>
+                <div class="pitch-marks" id="pitch-marks"></div>
+                <div class="attitude-bank-pointer" id="bank-pointer"></div>
+            </div>
+            <div class="mini-label">АВИАГОРИЗОНТ</div>
+        </div>
+
+        <!-- Правая панель -->
+        <div class="hud-right">
+            <div class="throttle-gauge">
+                <div class="throttle-label">ТЯГА</div>
+                <div class="throttle-bar-bg">
+                    <div class="throttle-bar-fill" id="throttle-fill"></div>
+                </div>
+                <div class="throttle-value" id="hud-throttle">0%</div>
+            </div>
+            <div class="gauge-item">
+                <span class="gauge-label">G-НАГРУЗКА</span>
+                <span class="gauge-value" id="hud-gforce">1.0</span>
+            </div>
+            <div class="gauge-item">
+                <span class="gauge-label">ТАНГАЖ</span>
+                <span class="gauge-value" id="hud-pitch">0°</span>
+            </div>
+            <div class="gauge-item">
+                <span class="gauge-label">КРЕН</span>
+                <span class="gauge-value" id="hud-roll">0°</span>
+            </div>
+            <div class="gauge-item">
+                <span class="gauge-label">УГОЛ АТАКИ</span>
+                <span class="gauge-value" id="hud-aoa">0°</span>
+            </div>
+        </div>
+
+        <!-- Нижняя панель -->
+        <div class="hud-bottom">
+            <div class="status-item" id="status-flaps">ЗАКРЫЛКИ: 0°</div>
+            <div class="status-item" id="status-gear">ШАССИ: ▼</div>
+            <div class="status-item" id="status-brake">ТОРМОЗ: ВЫКЛ</div>
+            <div class="status-item" id="status-stall" style="display:none">⚠️ СВАЛИВАНИЕ</div>
+            <div class="status-item" id="status-overspeed" style="display:none">⚠️ ПРЕВЫШЕНИЕ СКОРОСТИ</div>
+            <div class="status-item" id="status-ground" style="display:none">⚠️ ЗЕМЛЯ</div>
+        </div>
+
+        <!-- Прицел / Центр -->
+        <div class="hud-crosshair">
+            <div class="crosshair-h"></div>
+            <div class="crosshair-v"></div>
+            <div class="crosshair-circle"></div>
+        </div>
+
+        <!-- Компас -->
+        <div class="compass-strip" id="compass-strip">
+            <canvas id="compass-canvas" width="400" height="40"></canvas>
+        </div>
+
+        <!-- Пауза -->
+        <div id="pause-overlay" style="display:none;">
+            <div class="pause-text">⏸ ПАУЗА</div>
+            <p>Нажмите P для продолжения</p>
+        </div>
+
+        <!-- Крашнулись -->
+        <div id="crash-overlay" style="display:none;">
+            <div class="crash-text">💥 КРУШЕНИЕ</div>
+            <p>Нажмите R для перезапуска</p>
+        </div>
+    </div>
+
+    <!-- Canvas для 3D -->
+    <canvas id="game-canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="physics.js"></script>
+    <script src="aircraft.js"></script>
+    <script src="world.js"></script>
+    <script src="hud.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
