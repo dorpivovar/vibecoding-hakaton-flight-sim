@@ -104,35 +104,35 @@ class FlightPhysics {
             },
             fighter: {
                 name: 'F-16 Falcon',
-                mass: 9200,
+                mass: 8500,
                 wingArea: 27.87,
                 wingSpan: 9.96,
                 aspectRatio: 3.56,
-                maxThrust: 76000,
-                stallSpeed: 55,
+                maxThrust: 110000,
+                stallSpeed: 45,
                 maxSpeed: 590,              // ~2120 км/ч
-                neverExceedSpeed: 650,
+                neverExceedSpeed: 700,
                 serviceCeiling: 15000,
-                clMax: 1.2,
-                cl0: 0.15,
-                clAlpha: 4.0,
-                cd0: 0.022,
-                cdInduced: 0.12,
-                pitchRate: 3.5,
-                rollRate: 5.0,
-                yawRate: 1.5,
-                pitchDamping: 2.5,
-                rollDamping: 3.0,
-                yawDamping: 2.0,
-                pitchStability: 0.3,
-                rollStability: 0.15,
-                yawStability: 0.3,
-                flapClBonus: 0.2,
+                clMax: 1.6,
+                cl0: 0.25,
+                clAlpha: 5.0,
+                cd0: 0.018,
+                cdInduced: 0.06,
+                pitchRate: 4.5,
+                rollRate: 6.5,
+                yawRate: 2.0,
+                pitchDamping: 2.0,
+                rollDamping: 2.5,
+                yawDamping: 1.8,
+                pitchStability: 0.2,
+                rollStability: 0.1,
+                yawStability: 0.2,
+                flapClBonus: 0.3,
                 flapCdPenalty: 0.01,
                 gearDrag: 0.01,
                 brakeDrag: 0.08,
                 maxGForce: 9.0,
-                engineResponse: 4.0,
+                engineResponse: 5.0,
                 size: { fuselage: 5, wingspan: 5 }
             },
             airliner: {
@@ -171,10 +171,11 @@ class FlightPhysics {
         };
 
         this.aircraft = aircraftData[type] || aircraftData.cessna;
-        // Начальная скорость зависит от самолёта (1.8× скорости сваливания)
-        const initSpeed = this.aircraft.stallSpeed * 1.8;
+        // Начальная скорость зависит от самолёта
+        const speedMult = (type === 'fighter') ? 3.0 : 1.8;
+        const initSpeed = this.aircraft.stallSpeed * speedMult;
         this.velocity.set(0, 0, -initSpeed);
-        this.throttle = 0.5;
+        this.throttle = (type === 'fighter') ? 0.7 : 0.5;
         this.currentThrust = this.throttle * this.aircraft.maxThrust;
     }
 
@@ -487,15 +488,17 @@ class FlightPhysics {
     }
 
     reset() {
-        this.position.set(0, 500, 0);
-        // Начальная скорость = 1.8× скорости сваливания, чтобы самолёт летел стабильно
-        const initSpeed = this.aircraft.stallSpeed * 1.8;
+        const isFighter = this.aircraft.name === 'F-16 Falcon';
+        this.position.set(0, isFighter ? 1500 : 500, 0);
+        // Начальная скорость зависит от самолёта
+        const speedMult = isFighter ? 3.0 : 1.8;
+        const initSpeed = this.aircraft.stallSpeed * speedMult;
         this.velocity.set(0, 0, -initSpeed);
         this.acceleration.set(0, 0, 0);
         this.angularVelocity.set(0, 0, 0);
         this.quaternion.identity();
         this.euler.set(0, 0, 0, 'YXZ');
-        this.throttle = 0.5;
+        this.throttle = isFighter ? 0.7 : 0.5;
         this.flapAngle = 0;
         this.gearDown = true;
         this.airBrake = false;
