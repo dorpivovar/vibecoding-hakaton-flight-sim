@@ -237,6 +237,11 @@
         let targetPos = new THREE.Vector3();
         let lookTarget = new THREE.Vector3();
 
+        // Скорость сглаживания: для быстрых самолётов — быстрее следуем
+        const baseSmooth = 8;
+        const speedBoost = THREE.MathUtils.clamp(physics.airspeed / 150, 0, 2);
+        const smoothRate = baseSmooth + speedBoost * 6;
+
         switch (cameraMode) {
             case 0: // Chase camera
                 // Позиция камеры — сзади и сверху самолёта
@@ -248,7 +253,7 @@
                 lookTarget.copy(pos).addScaledVector(forward, 20);
                 break;
 
-            case 1: // Cockpit
+            case 1: // Cockpit — камера жёстко привязана, без интерполяции
                 targetPos.copy(pos)
                     .addScaledVector(up, 1.2)
                     .addScaledVector(forward, 1);
@@ -268,23 +273,34 @@
                 break;
         }
 
-        // Плавное следование
-        const smoothFactor = 1 - Math.exp(-8 * dt);
-        if (!cameraInitialized) {
-            smoothCamPos.copy(targetPos);
-            smoothCamTarget.copy(lookTarget);
-            cameraInitialized = true;
+        // Кабинная камера — без сглаживания, жёсткая привязка
+        if (cameraMode === 1) {
+            camera.position.copy(targetPos);
+            camera.lookAt(lookTarget);
         } else {
-            smoothCamPos.lerp(targetPos, smoothFactor);
-            smoothCamTarget.lerp(lookTarget, smoothFactor);
+            // Плавное следование для chase и external
+            const smoothFactor = 1 - Math.exp(-smoothRate * dt);
+            if (!cameraInitialized) {
+                smoothCamPos.copy(targetPos);
+                smoothCamTarget.copy(lookTarget);
+                cameraInitialized = true;
+            } else {
+                smoothCamPos.lerp(targetPos, smoothFactor);
+                smoothCamTarget.lerp(lookTarget, smoothFactor);
+            }
+
+            // Защита от NaN / Infinity
+            if (!isFinite(smoothCamPos.x)) smoothCamPos.copy(targetPos);
+            if (!isFinite(smoothCamTarget.x)) smoothCamTarget.copy(lookTarget);
+
+            camera.position.copy(smoothCamPos);
+            camera.lookAt(smoothCamTarget);
         }
 
-        camera.position.copy(smoothCamPos);
-        camera.lookAt(smoothCamTarget);
-
-        // FOV зависит от скорости (эффект скорости)
-        const speedFov = THREE.MathUtils.clamp(physics.airspeed / 200, 0, 1);
-        camera.fov = THREE.MathUtils.lerp(65, 85, speedFov);
+        // FOV зависит от скорости (мягкий эффект)
+        const maxSpeedForFov = physics.aircraft ? physics.aircraft.maxSpeed : 200;
+        const speedFov = THREE.MathUtils.clamp(physics.airspeed / maxSpeedForFov, 0, 1);
+        camera.fov = THREE.MathUtils.lerp(65, 78, speedFov);
         camera.updateProjectionMatrix();
     }
 
