@@ -13,7 +13,7 @@ class FlightPhysics {
 
         // Состояние самолёта
         this.position = new THREE.Vector3(0, 500, 0);
-        this.velocity = new THREE.Vector3(0, 0, -50); // начальная скорость вперёд
+        this.velocity = new THREE.Vector3(0, 0, -50); // будет перезаписано в setAircraft
         this.acceleration = new THREE.Vector3();
 
         // Ориентация через кватернион
@@ -171,6 +171,10 @@ class FlightPhysics {
         };
 
         this.aircraft = aircraftData[type] || aircraftData.cessna;
+        // Начальная скорость зависит от самолёта (1.8× скорости сваливания)
+        const initSpeed = this.aircraft.stallSpeed * 1.8;
+        this.velocity.set(0, 0, -initSpeed);
+        this.throttle = 0.5;
         this.currentThrust = this.throttle * this.aircraft.maxThrust;
     }
 
@@ -484,12 +488,14 @@ class FlightPhysics {
 
     reset() {
         this.position.set(0, 500, 0);
-        this.velocity.set(0, 0, -50);
+        // Начальная скорость = 1.8× скорости сваливания, чтобы самолёт летел стабильно
+        const initSpeed = this.aircraft.stallSpeed * 1.8;
+        this.velocity.set(0, 0, -initSpeed);
         this.acceleration.set(0, 0, 0);
         this.angularVelocity.set(0, 0, 0);
         this.quaternion.identity();
         this.euler.set(0, 0, 0, 'YXZ');
-        this.throttle = 0.3;
+        this.throttle = 0.5;
         this.flapAngle = 0;
         this.gearDown = true;
         this.airBrake = false;

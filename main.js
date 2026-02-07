@@ -213,9 +213,9 @@
 
         // Крен
         if (keys['KeyA']) {
-            physics.rollInput = 1;   // крен влево
+            physics.rollInput = -1;  // крен влево
         } else if (keys['KeyD']) {
-            physics.rollInput = -1;  // крен вправо
+            physics.rollInput = 1;   // крен вправо
         } else {
             physics.rollInput *= 0.85;
         }
