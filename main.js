@@ -29,16 +29,6 @@
     let smoothCamTarget = new THREE.Vector3();
     let cameraInitialized = false;
 
-    // Управление мышью — подвижное перекрестье
-    let crosshairX = 0;  // пиксели от центра
-    let crosshairY = 0;  // пиксели от центра
-    let pointerLocked = false;
-    const mouseSensitivity = 1.5;         // чувствительность мыши
-    const crosshairMaxRadius = 200;       // макс отклонение перекрестья в px
-    const crosshairReturnSpeed = 1.5;     // скорость возврата к центру
-    let crosshairElement = null;
-    let crosshairLineElement = null;
-
     // === ЗАГРУЗКА ===
     const loadingBar = document.getElementById('loading-bar');
     const loadingText = document.getElementById('loading-text');
@@ -176,40 +166,6 @@
         keys[e.code] = false;
     });
 
-    // === Мышь — Pointer Lock + подвижное перекрестье ===
-    const gameCanvas = document.getElementById('game-canvas');
-
-    // Захват курсора при клике
-    window.addEventListener('click', () => {
-        if (isRunning && !pointerLocked) {
-            gameCanvas.requestPointerLock();
-        }
-    });
-
-    document.addEventListener('pointerlockchange', () => {
-        pointerLocked = (document.pointerLockElement === gameCanvas);
-        if (!pointerLocked) {
-            crosshairX = 0;
-            crosshairY = 0;
-        }
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        if (pointerLocked) {
-            // Сдвигаем перекрестье по movementX/Y
-            crosshairX += e.movementX * mouseSensitivity;
-            crosshairY += e.movementY * mouseSensitivity;
-
-            // Ограничиваем радиус
-            const dist = Math.sqrt(crosshairX * crosshairX + crosshairY * crosshairY);
-            if (dist > crosshairMaxRadius) {
-                const scale = crosshairMaxRadius / dist;
-                crosshairX *= scale;
-                crosshairY *= scale;
-            }
-        }
-    });
-
     // Скролл для внешней камеры
     window.addEventListener('wheel', (e) => {
         if (cameraMode === 2) {
@@ -235,22 +191,11 @@
             physics.throttle = Math.max(0, physics.throttle - dt * 0.5);
         }
 
-        // Плавный возврат перекрестья к центру
-        const returnFactor = 1 - Math.exp(-crosshairReturnSpeed * dt);
-        crosshairX -= crosshairX * returnFactor;
-        crosshairY -= crosshairY * returnFactor;
-
-        // Нормализованные значения перекрестья: -1..1
-        const normX = crosshairX / crosshairMaxRadius;
-        const normY = crosshairY / crosshairMaxRadius;
-
         // === Тангаж ===
         if (keys['KeyW']) {
             physics.pitchInput = 1;
         } else if (keys['KeyS']) {
             physics.pitchInput = -1;
-        } else if (Math.abs(normY) > 0.02) {
-            physics.pitchInput = normY;
         } else {
             physics.pitchInput *= 0.85;
         }
@@ -260,43 +205,17 @@
             physics.rollInput = -1;
         } else if (keys['KeyD']) {
             physics.rollInput = 1;
-        } else if (Math.abs(normX) > 0.02) {
-            physics.rollInput = -normX;
         } else {
             physics.rollInput *= 0.85;
         }
 
         // === Рыскание (клавиатура) ===
         if (keys['KeyQ']) {
-            physics.yawInput = -1;
-        } else if (keys['KeyE']) {
             physics.yawInput = 1;
+        } else if (keys['KeyE']) {
+            physics.yawInput = -1;
         } else {
             physics.yawInput *= 0.85;
-        }
-    }
-
-    // === ОБНОВЛЕНИЕ ПЕРЕКРЕСТЬЯ ===
-    function updateCrosshair() {
-        if (!crosshairElement) {
-            crosshairElement = document.getElementById('hud-crosshair');
-            crosshairLineElement = document.getElementById('crosshair-line');
-        }
-        if (!crosshairElement) return;
-
-        // Позиция перекрестья на экране
-        const cx = window.innerWidth / 2 + crosshairX;
-        const cy = window.innerHeight / 2 + crosshairY;
-        crosshairElement.style.left = cx + 'px';
-        crosshairElement.style.top = cy + 'px';
-
-        // Линия от центра к перекрестью
-        if (crosshairLineElement) {
-            const dist = Math.sqrt(crosshairX * crosshairX + crosshairY * crosshairY);
-            const angle = Math.atan2(crosshairX, -crosshairY); // угол от центра
-            crosshairLineElement.style.height = dist + 'px';
-            crosshairLineElement.style.transform = `rotate(${angle}rad)`;
-            crosshairLineElement.style.opacity = dist > 5 ? '1' : '0';
         }
     }
 
@@ -403,9 +322,6 @@
 
         // HUD
         hud.update(physics);
-
-        // Перекрестье
-        updateCrosshair();
 
         // Крушение
         if (physics.isCrashed) {
