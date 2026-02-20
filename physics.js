@@ -104,35 +104,35 @@ class FlightPhysics {
             },
             fighter: {
                 name: 'F-16 Falcon',
-                mass: 9200,
-                wingArea: 27.87,
-                wingSpan: 9.96,
-                aspectRatio: 3.56,
-                maxThrust: 76000,
-                stallSpeed: 55,
-                maxSpeed: 590,              // ~2120 км/ч
-                neverExceedSpeed: 650,
-                serviceCeiling: 15000,
-                clMax: 1.2,
-                cl0: 0.15,
-                clAlpha: 4.0,
-                cd0: 0.022,
-                cdInduced: 0.12,
-                pitchRate: 3.5,
-                rollRate: 5.0,
-                yawRate: 1.5,
-                pitchDamping: 2.5,
-                rollDamping: 3.0,
-                yawDamping: 2.0,
-                pitchStability: 0.3,
-                rollStability: 0.15,
-                yawStability: 0.3,
-                flapClBonus: 0.2,
-                flapCdPenalty: 0.01,
-                gearDrag: 0.01,
-                brakeDrag: 0.08,
-                maxGForce: 9.0,
-                engineResponse: 4.0,
+                mass: 1100,
+                wingArea: 16.2,
+                wingSpan: 11.0,
+                aspectRatio: 7.5,
+                maxThrust: 3500,
+                stallSpeed: 28,
+                maxSpeed: 63,
+                neverExceedSpeed: 80,
+                serviceCeiling: 4100,
+                clMax: 1.6,
+                cl0: 0.3,
+                clAlpha: 5.5,
+                cd0: 0.032,
+                cdInduced: 0.055,
+                pitchRate: 1.2,
+                rollRate: 1.8,
+                yawRate: 0.6,
+                pitchDamping: 3.0,
+                rollDamping: 4.0,
+                yawDamping: 2.5,
+                pitchStability: 0.5,
+                rollStability: 0.3,
+                yawStability: 0.4,
+                flapClBonus: 0.4,
+                flapCdPenalty: 0.015,
+                gearDrag: 0.02,
+                brakeDrag: 0.06,
+                maxGForce: 3.8,
+                engineResponse: 2.0,
                 size: { fuselage: 5, wingspan: 5 }
             },
             airliner: {
@@ -171,10 +171,11 @@ class FlightPhysics {
         };
 
         this.aircraft = aircraftData[type] || aircraftData.cessna;
-        // Начальная скорость зависит от самолёта (1.8× скорости сваливания)
-        const initSpeed = this.aircraft.stallSpeed * 1.8;
+        // Начальная скорость зависит от самолёта
+        const speedMult = (type === 'fighter') ? 3.0 : 1.8;
+        const initSpeed = this.aircraft.stallSpeed * speedMult;
         this.velocity.set(0, 0, -initSpeed);
-        this.throttle = 0.5;
+        this.throttle = (type === 'fighter') ? 0.7 : 0.5;
         this.currentThrust = this.throttle * this.aircraft.maxThrust;
     }
 
@@ -487,15 +488,17 @@ class FlightPhysics {
     }
 
     reset() {
-        this.position.set(0, 500, 0);
-        // Начальная скорость = 1.8× скорости сваливания, чтобы самолёт летел стабильно
-        const initSpeed = this.aircraft.stallSpeed * 1.8;
+        const isFighter = this.aircraft.name === 'F-16 Falcon';
+        this.position.set(0, isFighter ? 1500 : 500, 0);
+        // Начальная скорость зависит от самолёта
+        const speedMult = isFighter ? 3.0 : 1.8;
+        const initSpeed = this.aircraft.stallSpeed * speedMult;
         this.velocity.set(0, 0, -initSpeed);
         this.acceleration.set(0, 0, 0);
         this.angularVelocity.set(0, 0, 0);
         this.quaternion.identity();
         this.euler.set(0, 0, 0, 'YXZ');
-        this.throttle = 0.5;
+        this.throttle = isFighter ? 0.7 : 0.5;
         this.flapAngle = 0;
         this.gearDown = true;
         this.airBrake = false;
